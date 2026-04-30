@@ -51,8 +51,8 @@ tab1, tab2 = st.tabs(["Formular 1: Alegere Teme", "Formular 2: Trimitere Rezolv�
 with tab1:
     st.header("Teme pentru examenul de \"Teoria Probabilităților și elemente de statistică matematică\"")
     st.info("Înainte de a alege exercițiile, asigură-te că introduci datele tale corect.")
-    st.markdown("[👉 **Click aici pentru lista de exerciții**](https://drive.google.com/file/d/1j55dPT0ElRtnC2-OEny6ObbZExTaFP8x/view?usp=drivesdk)")
-
+    st.markdown(
+        "[👉 **Click aici pentru lista de exerciții**](https://drive.google.com/file/d/1j55dPT0ElRtnC2-OEny6ObbZExTaFP8x/view?usp=drivesdk)")
 
     if not probleme_disponibile:
         st.warning("Toate problemele au fost rezervate!")
@@ -74,7 +74,6 @@ with tab1:
             specializare = st.selectbox("Specializarea", ["Selectează...", "Info An 2", "Info An 3", "An complementar"])
 
             st.write("---")
-            # Aici am adăugat HINT-ul cerut pentru exerciții
             st.info(
                 "💡 **HINT:** Dacă dorești să alegi **o singură problemă**, selectează numărul ei la prima opțiune, iar la a doua opțiune alege **'Niciuna (Aleg doar 1)'**.")
 
@@ -118,7 +117,15 @@ with tab1:
             else:
                 df_live = citeste_sheet()
 
-                if email in [str(e).lower().strip() for e in df_live['Email'].tolist()]:
+                # --- NOU: Validare pentru Nume și Prenume duplicate ---
+                nume_complet_curent = f"{nume} {prenume}".lower()
+                nume_existente = [f"{str(row['Numele']).strip().lower()} {str(row['Prenumele']).strip().lower()}" for
+                                  _, row in df_live.iterrows()]
+
+                if nume_complet_curent in nume_existente:
+                    st.error(
+                        f"Un student cu numele {nume} {prenume} a făcut deja o rezervare! Dacă aceasta este o eroare, contactează administratorul.")
+                elif email in [str(e).lower().strip() for e in df_live['Email'].tolist()]:
                     st.error("Această adresă de mail a fost deja folosită pentru o rezervare!")
                 else:
                     luate_live = set()
@@ -174,7 +181,6 @@ with tab2:
         email_extras = str(row['Email']).strip()
         link_existent = str(row['Link_Video_1']).strip()
 
-        # Filtru: Adăugăm în listă DOAR studenții care NU au trimis încă rezolvările
         if email_extras and link_existent in ["", "nan", "None"]:
             nume_complet = f"{row['Numele']} {row['Prenumele']}"
 
@@ -193,7 +199,6 @@ with tab2:
             email_extras = studenti_dict[student_selectat]
             idx_student = df[df['Email'] == email_extras].index[0]
 
-            # Reparația pentru .0 : Convertim în float apoi în int
             p1_asignat = int(float(str(df.at[idx_student, 'Problema_1'])))
 
             p2_brut = str(df.at[idx_student, 'Problema_2']).strip()
@@ -238,6 +243,6 @@ with tab2:
 
                         update_sheet(df_update)
 
-                        st.success("✅ Rezolvările tale au fost salvate cu succes în baza de date!")
+                        st.success("✅ Rezolvările tale au fost salvate cu succes în baza de date!!")
                         time.sleep(3)
-                        st.rerun()  # După reload, studentul dispare din listă automat!
+                        st.rerun()
