@@ -51,6 +51,8 @@ tab1, tab2 = st.tabs(["Formular 1: Alegere Teme", "Formular 2: Trimitere Rezolv�
 with tab1:
     st.header("Teme pentru examenul de \"Teoria Probabilităților și elemente de statistică matematică\"")
     st.info("Înainte de a alege exercițiile, asigură-te că introduci datele tale corect.")
+    st.markdown("[👉 **Click aici pentru lista de exerciții**](https://drive.google.com/file/d/1j55dPT0ElRtnC2-OEny6ObbZExTaFP8x/view?usp=drivesdk)")
+
 
     if not probleme_disponibile:
         st.warning("Toate problemele au fost rezervate!")
