@@ -26,7 +26,8 @@ def update_sheet(new_df):
 
 
 def calculeaza_probleme_disponibile(df):
-    probleme_totale = list(range(1, 241))
+    # Modificat pentru 223 de probleme (range merge până la 224 exclusiv)
+    probleme_totale = list(range(1, 224))
     p1_list = df['Problema_1'].tolist()
     p2_list = df['Problema_2'].tolist()
 
@@ -57,21 +58,22 @@ with tab1:
     if not probleme_disponibile:
         st.warning("Toate problemele au fost rezervate!")
     else:
-        with st.form("form_alegere", clear_on_submit=True):
+        with st.form("form_alegere", clear_on_submit=False):
             col_nume, col_prenume = st.columns(2)
             with col_nume:
-                nume_input = st.text_input("Numele")
+                nume_input = st.text_input("Numele", key="f1_nume")
             with col_prenume:
-                prenume_input = st.text_input("Prenumele")
+                prenume_input = st.text_input("Prenumele", key="f1_prenume")
 
             col_grupa, col_tel = st.columns(2)
             with col_grupa:
-                grupa = st.selectbox("Grupa", ["Selectează...", "1", "2", "3", "4", "An complementar"])
+                grupa = st.selectbox("Grupa", ["Selectează...", "1", "2", "3", "4", "An complementar"], key="f1_grupa")
             with col_tel:
-                telefon_input = st.text_input("Nr. de telefon")
+                telefon_input = st.text_input("Nr. de telefon", key="f1_tel")
 
-            email_input = st.text_input("Adresa de mail")
-            specializare = st.selectbox("Specializarea", ["Selectează...", "Info An 2", "Info An 3", "An complementar"])
+            email_input = st.text_input("Adresa de mail", key="f1_email")
+            specializare = st.selectbox("Specializarea", ["Selectează...", "Info An 2", "Info An 3", "An complementar"],
+                                        key="f1_spec")
 
             st.write("---")
             st.info(
@@ -117,7 +119,6 @@ with tab1:
             else:
                 df_live = citeste_sheet()
 
-                # --- NOU: Validare pentru Nume și Prenume duplicate ---
                 nume_complet_curent = f"{nume} {prenume}".lower()
                 nume_existente = [f"{str(row['Numele']).strip().lower()} {str(row['Prenumele']).strip().lower()}" for
                                   _, row in df_live.iterrows()]
@@ -167,11 +168,16 @@ with tab1:
                         st.success(
                             f"✅ Rezervare înregistrată cu succes la ora {timestamp_curent}! Exerciții alese: {msg_ex}")
                         st.balloons()
+
+                        for key in ['f1_nume', 'f1_prenume', 'f1_grupa', 'f1_tel', 'f1_email', 'f1_spec', 'p1', 'p2']:
+                            if key in st.session_state:
+                                del st.session_state[key]
+
                         time.sleep(3)
                         st.rerun()
 
 # ═══════════════════════════════════════════════════════════════
-# TAB 2: TRIMITERE REZOLVĂRI
+# TAB 2: TRIMITERE REZOLVARI
 # ═══════════════════════════════════════════════════════════════
 with tab2:
     st.header("Trimite Rezolvările (Link YouTube)")
@@ -217,13 +223,13 @@ with tab2:
             msg_probleme = f"**{p1_asignat}**" if not are_doua_probleme else f"**{p1_asignat}** și **{p2_asignat}**"
             st.write(f"👉 Ai de predat exercițiile: {msg_probleme}")
 
-            with st.form("form_video", clear_on_submit=True):
+            with st.form("form_video", clear_on_submit=False):
                 st.write("Introdu link-urile video de pe YouTube:")
-                link_v1 = st.text_input(f"Link video pentru exercițiul {p1_asignat}")
+                link_v1 = st.text_input(f"Link video pentru exercițiul {p1_asignat}", key="f2_v1")
 
                 link_v2 = ""
                 if are_doua_probleme:
-                    link_v2 = st.text_input(f"Link video pentru exercițiul {p2_asignat}")
+                    link_v2 = st.text_input(f"Link video pentru exercițiul {p2_asignat}", key="f2_v2")
 
                 submit_video = st.form_submit_button("Trimite Rezolvările")
 
@@ -244,5 +250,10 @@ with tab2:
                         update_sheet(df_update)
 
                         st.success("✅ Rezolvările tale au fost salvate cu succes în baza de date!!")
+
+                        for key in ['f2_v1', 'f2_v2']:
+                            if key in st.session_state:
+                                del st.session_state[key]
+
                         time.sleep(3)
                         st.rerun()
