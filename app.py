@@ -26,7 +26,6 @@ def update_sheet(new_df):
 
 
 def calculeaza_probleme_disponibile(df):
-    # Modificat pentru 223 de probleme (range merge până la 224 exclusiv)
     probleme_totale = list(range(1, 224))
     p1_list = df['Problema_1'].tolist()
     p2_list = df['Problema_2'].tolist()
@@ -54,6 +53,9 @@ with tab1:
     st.info("Înainte de a alege exercițiile, asigură-te că introduci datele tale corect.")
     st.markdown(
         "[👉 **Click aici pentru lista de exerciții**](https://drive.google.com/file/d/1j55dPT0ElRtnC2-OEny6ObbZExTaFP8x/view?usp=drivesdk)")
+    st.markdown(
+        "[📅 **Click aici pentru modul de notare și termenele limită**](https://drive.google.com/file/d/1Rhs99UojJB2N0METqw0wz7M62MXsMb2Q/view?usp=drivesdk)")
+    st.write("---")
 
     if not probleme_disponibile:
         st.warning("Toate problemele au fost rezervate!")
