@@ -14,19 +14,19 @@ URL_TABEL = "https://docs.google.com/spreadsheets/d/1iW5EzJv7lEgf-E5Lfq6pW6X8tY7
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 
-def citeste_sheet():
-    df = conn.read(spreadsheet=URL_TABEL, worksheet="Date_Studenti", ttl=0).astype(str)
+def citeste_sheet(live=False):
+    ttl_value = 0 if live else 60
+    df = conn.read(spreadsheet=URL_TABEL, worksheet="Date_Studenti", ttl=ttl_value).astype(str)
     df = df.replace("nan", "")
     return df
 
 
 def update_sheet(new_df):
     conn.update(spreadsheet=URL_TABEL, worksheet="Date_Studenti", data=new_df)
-    st.cache_data.clear()
+    st.cache_data.clear()  # Ștergem cache-ul instant după o modificare
 
 
 def calculeaza_probleme_disponibile(df):
-    # Setat pentru 223 de probleme
     probleme_totale = list(range(1, 224))
     p1_list = df['Problema_1'].tolist()
     p2_list = df['Problema_2'].tolist()
@@ -41,18 +41,17 @@ def calculeaza_probleme_disponibile(df):
     return [p for p in probleme_totale if p not in probleme_luate]
 
 
-df = citeste_sheet()
+# Citim cu cache pentru interfață (ca să nu ne blocheze Google)
+df = citeste_sheet(live=False)
 probleme_disponibile = calculeaza_probleme_disponibile(df)
 
 # Secțiunea principală: Alegere Teme
-st.header("Teme (Alegerea Exercițiilor) pentru examenul de \"Teoria Probabilităților și elemente de statistică matematică\"")
+st.header("Teme pentru examenul de \"Teoria Probabilităților și elemente de statistică matematică\"")
 st.info("Înainte de a alege exercițiile, asigură-te că introduci datele tale corect.")
 
 # Link-uri importante
 st.markdown(
     "[👉 **Click aici pentru lista de exerciții**](https://drive.google.com/file/d/1ylAGEwDh2WFdGZqYGnW2Cc07loEHqE4d/view?usp=drivesdk)")
-st.markdown(
-    "[📊 **IMPORTANT: INAINTE DE ALEGE EXERCITIILE VERIFICA AICI DACA EXERCITIILE NU AU MAI FOST ALESE DE ALTCINEVA INAINTE**](https://docs.google.com/spreadsheets/d/1iW5EzJv7lEgf-E5Lfq6pW6X8tY7JCuaCPLwq2sDCHfk/edit?gid=0#gid=0)")
 st.markdown(
     "[📅 **Click aici pentru modul de notare și termenele limită**](https://drive.google.com/file/d/1pAsljAYtgVLVb0Us7AuX72GUElp0_bei/view)")
 st.write("---")
@@ -119,7 +118,8 @@ else:
         if eroare:
             st.error(eroare)
         else:
-            df_live = citeste_sheet()
+            # AICI facem o citire LIVE (forțată) ca să fim 100% siguri că problema nu s-a luat chiar acum
+            df_live = citeste_sheet(live=True)
 
             nume_complet_curent = f"{nume} {prenume}".lower()
             nume_existente = [f"{str(row['Numele']).strip().lower()} {str(row['Prenumele']).strip().lower()}" for
@@ -171,7 +171,7 @@ else:
                         f"✅ Rezervare înregistrată cu succes la ora {timestamp_curent}! Exerciții alese: {msg_ex}")
                     st.balloons()
 
-                    # Ștergem datele din formular la succes
+                    # Curățăm memoria doar după succes
                     for key in ['f1_nume', 'f1_prenume', 'f1_grupa', 'f1_tel', 'f1_email', 'f1_spec', 'p1', 'p2']:
                         if key in st.session_state:
                             del st.session_state[key]
